@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jimin Love Nijar 💜 BTS ARMY</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;font-family:"Segoe UI",Tahoma,sans-serif;color:#fff}
+  body{background:radial-gradient(circle at 30% 20%,#7b2ff7 0%,#3a0ca3 40%,#10002b 100%)}
+  #sky{position:fixed;inset:0;pointer-events:none}
+  .float{position:absolute;bottom:-60px;opacity:.85;animation:rise linear forwards;text-shadow:0 0 12px #c77dff}
+  @keyframes rise{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
+  #center{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+  #lang{font-size:1rem;letter-spacing:3px;color:#e0aaff;margin-bottom:10px;text-transform:uppercase}
+  #phrase{font-size:clamp(2rem,8vw,5rem);font-weight:800;text-shadow:0 0 25px #c77dff,0 0 60px #9d4edd;transition:opacity .5s}
+  #count{margin-top:14px;color:#e0aaff}
+  #brand{position:fixed;top:14px;left:0;right:0;text-align:center;font-weight:900;font-size:1.4rem;letter-spacing:6px;color:#e0aaff}
+  #wall{position:fixed;bottom:0;left:0;right:0;height:64px;overflow:hidden;background:rgba(16,0,43,.55);backdrop-filter:blur(6px)}
+  #track{display:flex;gap:40px;white-space:nowrap;padding:18px 0;animation:slide 400s linear infinite;width:max-content}
+  #track span{color:#e0aaff;font-size:1.05rem}
+  @keyframes slide{to{transform:translateX(-50%)}}
+  #ui{position:fixed;top:50px;right:14px;display:flex;flex-direction:column;gap:8px;z-index:5;align-items:flex-end}
+  a.btn{text-decoration:none;display:inline-block}
+  button,label.btn,a.btn{background:#9d4edd;border:0;color:#fff;padding:9px 14px;border-radius:20px;cursor:pointer;font-size:.9rem;box-shadow:0 0 14px #9d4edd}
+  button:hover,label.btn:hover,a.btn:hover{background:#c77dff}
+  #now{font-size:.8rem;color:#e0aaff;max-width:200px;text-align:right}
+  #start{position:fixed;inset:0;background:rgba(16,0,43,.92);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;text-align:center}
+  #start h1{font-size:2.4rem;text-shadow:0 0 25px #c77dff}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="brand">BTS 💜 ARMY</div>
+
+<div id="center">
+  <div id="lang"></div>
+  <div id="phrase"></div>
+  <div id="count"></div>
+</div>
+
+<div id="ui">
+  <button id="playBtn">⏯ Play / Pause</button>
+  <button id="nextBtn">⏭ Next</button>
+  <label class="btn">🎵 Choose songs<input id="files" type="file" accept="audio/*" multiple hidden></label>
+  <a class="btn" href="https://www.youtube.com/results?search_query=BTS+official+playlist" target="_blank" rel="noopener noreferrer">▶ BTS on YouTube</a>
+  <a class="btn" href="https://open.spotify.com/search/BTS" target="_blank" rel="noopener noreferrer">🎧 BTS on Spotify</a>
+  <div id="now"></div>
+</div>
+
+<div id="wall"><div id="track"></div></div>
+
+<div id="start">
+  <h1>💜 Jimin Love Nijar 💜</h1>
+  <p>Click anywhere to start · اضغط في أي مكان للبدء</p>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+// ============ 1) 100 languages: [language, word for "love"] ============
+const LOVE = [
+["English","Love"],["Arabic","حب"],["Korean","사랑"],["Spanish","Amor"],["French","Amour"],
+["German","Liebe"],["Italian","Amore"],["Portuguese","Amor"],["Russian","Любовь"],["Japanese","愛"],
+["Chinese","爱"],["Hindi","प्यार"],["Bengali","ভালোবাসা"],["Urdu","محبت"],["Turkish","Aşk"],
+["Persian","عشق"],["Hebrew","אהבה"],["Greek","Αγάπη"],["Dutch","Liefde"],["Swedish","Kärlek"],
+["Norwegian","Kjærlighet"],["Danish","Kærlighed"],["Finnish","Rakkaus"],["Polish","Miłość"],["Czech","Láska"],
+["Slovak","Láska"],["Hungarian","Szerelem"],["Romanian","Dragoste"],["Bulgarian","Любов"],["Serbian","Љубав"],
+["Croatian","Ljubav"],["Slovenian","Ljubezen"],["Ukrainian","Любов"],["Belarusian","Каханне"],["Lithuanian","Meilė"],
+["Latvian","Mīlestība"],["Estonian","Armastus"],["Icelandic","Ást"],["Irish","Grá"],["Welsh","Cariad"],
+["Scots Gaelic","Gaol"],["Breton","Karantez"],["Basque","Maitasuna"],["Catalan","Amor"],["Galician","Amor"],
+["Maltese","Imħabba"],["Albanian","Dashuri"],["Macedonian","Љубов"],["Bosnian","Ljubav"],["Georgian","სიყვარული"],
+["Armenian","Սեր"],["Azerbaijani","Sevgi"],["Kazakh","Махаббат"],["Uzbek","Sevgi"],["Kyrgyz","Сүйүү"],
+["Tajik","Муҳаббат"],["Turkmen","Söýgi"],["Mongolian","Хайр"],["Tibetan","བརྩེ་དུང་"],["Nepali","माया"],
+["Sinhala","ආදරය"],["Tamil","காதல்"],["Telugu","ప్రేమ"],["Kannada","ಪ್ರೀತಿ"],["Malayalam","പ്രണയം"],
+["Marathi","प्रेम"],["Gujarati","પ્રેમ"],["Punjabi","ਪਿਆਰ"],["Odia","ପ୍ରେମ"],["Assamese","ভালপোৱা"],
+["Thai","ความรัก"],["Vietnamese","Tình yêu"],["Khmer","ស្នេហា"],["Lao","ຄວາມຮັກ"],["Burmese","ချစ်ခြင်း"],
+["Indonesian","Cinta"],["Malay","Cinta"],["Filipino","Pag-ibig"],["Javanese","Tresna"],["Swahili","Upendo"],
+["Zulu","Uthando"],["Xhosa","Uthando"],["Afrikaans","Liefde"],["Amharic","ፍቅር"],["Hausa","Soyayya"],
+["Yoruba","Ifẹ"],["Igbo","Ịhụnanya"],["Somali","Jacayl"],["Malagasy","Fitiavana"],["Shona","Rudo"],
+["Kurdish","Evîn"],["Pashto","مینه"],["Sindhi","پيار"],["Uyghur","مۇھەببەت"],["Esperanto","Amo"],
+["Latin","Amor"],["Hawaiian","Aloha"],["Maori","Aroha"],["Samoan","Alofa"],["Haitian Creole","Lanmou"]
+];
+const phraseOf = w => `Jimin ${w} Nijar`;
+
+// ============ 2) Rotating big phrase + scrolling wall ============
+const phraseEl = document.getElementById("phrase");
+const langEl = document.getElementById("lang");
+const countEl = document.getElementById("count");
+let idx = 0;
+function show(){
+  phraseEl.style.opacity = 0;
+  setTimeout(()=>{
+    const [lang, word] = LOVE[idx];
+    langEl.textContent = lang;
+    phraseEl.innerHTML = `Jimin <span dir="auto" style="color:#ffafcc">${word}</span> Nijar 💜`;
+    countEl.textContent = `${idx+1} / ${LOVE.length}`;
+    phraseEl.style.opacity = 1;
+    idx = (idx+1) % LOVE.length;
+  },400);
+}
+show(); setInterval(show, 2500);
+
+const track = document.getElementById("track");
+const html = LOVE.map(([l,w])=>`<span dir="auto">${phraseOf(w)}</span>`).join("");
+track.innerHTML = html + html;
+
+// ============ 3) BTS / ARMY floating background ============
+const ITEMS = ["💜","💜","💜","BTS","ARMY","보라해","방탄소년단","🐨","🐯","🐹","🐰","🐥","🐴","🦄","✨","🎤","🪄"];
+const sky = document.getElementById("sky");
+const ctx = sky.getContext("2d");
+function resize(){ sky.width = innerWidth; sky.height = innerHeight; }
+resize(); addEventListener("resize", resize);
+const stars = Array.from({length:120},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.02+.005,p:Math.random()*6}));
+(function twinkle(t=0){
+  ctx.clearRect(0,0,sky.width,sky.height);
+  for(const s of stars){
+    ctx.globalAlpha = .4+.6*Math.abs(Math.sin(t*s.s+s.p));
+    ctx.fillStyle = "#e0aaff";
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,7); ctx.fill();
+  }
+  requestAnimationFrame(twinkle);
+})();
+
+function spawn(){
+  const el = document.createElement("div");
+  el.className = "float";
+  el.textContent = ITEMS[Math.floor(Math.random()*ITEMS.length)];
+  el.style.left = Math.random()*100 + "vw";
+  el.style.fontSize = (18 + Math.random()*40) + "px";
+  const d = 8 + Math.random()*8;
+  el.style.animationDuration = d + "s";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), d*1000);
+}
+setInterval(spawn, 350);
+
+// ============ 4) Music ============
+// Put your BTS mp3 files in a folder called "music" next to this file
+// and list their names here:
+const PLAYLIST = [
+  "music/song-1.mp3",
+  "music/song-2.mp3",
+  "music/song-3.mp3"
+];
+// ...or use the "Choose songs" button on the page to pick files from your PC.
+
+const audio = document.getElementById("audio");
+const now = document.getElementById("now");
+let tracks = PLAYLIST.map(src => ({src, name: src.split("/").pop()}));
+let cur = 0;
+
+function load(i){
+  if(!tracks.length) return;
+  cur = (i + tracks.length) % tracks.length;
+  audio.src = tracks[cur].src;
+  now.textContent = "🎶 " + tracks[cur].name;
+  audio.play().catch(()=>{});
+}
+audio.addEventListener("ended", ()=>load(cur+1));
+audio.addEventListener("error", ()=>{ if(tracks.length>1) load(cur+1); });
+
+document.getElementById("start").addEventListener("click", e=>{
+  e.currentTarget.remove();
+  load(0);
+});
+document.getElementById("playBtn").onclick = ()=> audio.paused ? audio.play() : audio.pause();
+document.getElementById("nextBtn").onclick = ()=> load(cur+1);
+document.getElementById("files").onchange = e=>{
+  tracks = [...e.target.files].map(f=>({src:URL.createObjectURL(f), name:f.name.replace(/\.[^.]+$/,"")}));
+  load(0);
+};
+</script>
+</body>
+</html>
